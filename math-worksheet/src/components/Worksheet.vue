@@ -11,9 +11,10 @@
             v-model="studentName" 
             placeholder="Enter your name"
             :class="{ 'input-error': showNameError }"
+            @input="handleNameInput"
           >
         </div>
-        <div class="score-display">
+        <div class="score-display" v-if="showResults">
           Score: {{ score }}/12
         </div>
       </div>
@@ -25,14 +26,20 @@
           v-for="(question, index) in questions" 
           :key="index" 
           class="question-item"
-          :class="{ 'correct': question.selected === question.correctAnswer, 'incorrect': question.selected && question.selected !== question.correctAnswer }"
+          :class="{ 
+            'correct': showFeedback && question.selected === question.correctAnswer, 
+            'incorrect': showFeedback && question.selected && question.selected !== question.correctAnswer 
+          }"
         >
           <div class="question-text">{{ question.text }}</div>
           <div class="options-container">
             <label 
               v-for="(option, optIndex) in question.options" 
               :key="optIndex"
-              :class="{ 'selected': question.selected === option }"
+              :class="{ 
+                'selected': question.selected === option,
+                'disabled': !nameEntered
+              }"
             >
               <input 
                 type="radio" 
@@ -40,6 +47,7 @@
                 :value="option" 
                 v-model="question.selected"
                 @change="clearFeedback(index)"
+                :disabled="!nameEntered"
               >
               {{ option }}
             </label>
@@ -51,8 +59,20 @@
       </div>
   
       <div class="actions">
-        <button @click="resetAnswers" class="reset-btn">Reset Answers</button>
-        <button @click="submitAnswers" class="submit-btn">Submit</button>
+        <button 
+          @click="resetAnswers" 
+          class="reset-btn"
+          :disabled="!nameEntered"
+        >
+          Reset Answers
+        </button>
+        <button 
+          @click="submitAnswers" 
+          class="submit-btn"
+          :disabled="!nameEntered"
+        >
+          Submit
+        </button>
       </div>
   
       <div class="results" v-if="showResults">
@@ -71,9 +91,10 @@
     data() {
       return {
         studentName: '',
-        showNameError: false,
-        showFeedback: false,
-        showResults: false,
+      showNameError: false,
+      showFeedback: false,
+      showResults: false,
+      nameEntered: false,
         questions: [
           {
             text: '17 rounded off to the nearest 10 is..',
@@ -172,37 +193,40 @@
       }
     },
     methods: {
-      submitAnswers() {
-        if (!this.studentName.trim()) {
-          this.showNameError = true
-          return
-        }
-        
-        this.showNameError = false
-        this.showFeedback = true
-        this.showResults = true
-        
-        // Scroll to results
-        setTimeout(() => {
-          const resultsElement = document.querySelector('.results')
-          if (resultsElement) {
-            resultsElement.scrollIntoView({ behavior: 'smooth' })
-          }
-        }, 100)
-      },
-      resetAnswers() {
-        this.questions.forEach(question => {
-          question.selected = null
-        })
-        this.showFeedback = false
-        this.showResults = false
-      },
-      clearFeedback() {
-        if (this.showFeedback) {
-          this.showFeedback = false
-          this.showResults = false
-        }
+        handleNameInput() {
+      this.nameEntered = this.studentName.trim().length > 0;
+      this.showNameError = false;
+    },
+    submitAnswers() {
+      if (!this.studentName.trim()) {
+        this.showNameError = true;
+        return;
       }
+      
+      this.showNameError = false;
+      this.showFeedback = true;
+      this.showResults = true;
+      
+      setTimeout(() => {
+        const resultsElement = document.querySelector('.results');
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    },
+    resetAnswers() {
+      this.questions.forEach(question => {
+        question.selected = null;
+      });
+      this.showFeedback = false;
+      this.showResults = false;
+    },
+    clearFeedback() {
+      if (this.showFeedback) {
+        this.showFeedback = false;
+        this.showResults = false;
+      }
+    }
     }
   }
   </script>
