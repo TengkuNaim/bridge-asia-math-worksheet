@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <Worksheet />
+    <work-sheet />
   </div>
 </template>
 
 <script>
-import Worksheet from './components/Worksheet.vue'
+import WorkSheet from './components/WorkSheet.vue'
 
 export default {
   name: 'App',
   components: {
-    Worksheet
+    WorkSheet
   }
 }
 </script>
