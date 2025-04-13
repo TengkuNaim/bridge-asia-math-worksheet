@@ -1,44 +1,48 @@
 <template>
-  <div class="worksheet-container">
-    <h1>Rounding Off to Nearest 10</h1>
-
-    <div class="header-section">
-      <div class="name-input">
-        <label for="studentName">Name:</label>
+  <div class="max-w-4xl mx-auto p-5 bg-gray-50 rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-5">Rounding Off to Nearest 10</h1>
+    
+    <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-50 p-4 rounded-lg mb-5">
+      <div class="w-full sm:w-auto mb-3 sm:mb-0">
+        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">Name:</label>
         <input
           type="text"
           id="studentName"
           v-model="studentName"
           placeholder="Enter your name"
-          :class="{ 'input-error': showNameError }"
           @input="handleNameInput"
-        />
+          :class="['w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 
+                  showNameError ? 'border-red-500 animate-shake' : 'border-gray-300']"
+        >
       </div>
-      <div class="score-display" v-if="showResults">Score: {{ score }}/12</div>
+      <div v-if="showResults" class="text-lg font-bold text-gray-800">
+        Score: {{ score }}/12
+      </div>
     </div>
 
-    <div class="instructions">Circle the correct answers.</div>
+    <p class="text-center italic text-gray-600 mb-6">Circle the correct answers.</p>
 
-    <div class="questions-container">
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
       <div
         v-for="(question, index) in questions"
         :key="index"
-        class="question-item"
+        class="question-item p-4 bg-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md"
         :class="{
-          correct: showFeedback && question.selected === question.correctAnswer,
-          incorrect:
-            showFeedback && question.selected && question.selected !== question.correctAnswer,
+          'border-l-4 border-green-500 bg-green-50': showFeedback && question.selected === question.correctAnswer,
+          'border-l-4 border-red-500 bg-red-50': showFeedback && question.selected && question.selected !== question.correctAnswer
         }"
       >
-        <div class="question-text">{{ question.text }}</div>
-        <div class="options-container">
+      <div class="font-bold text-gray-800 mb-3">{{ question.text }}</div>
+        <div class="flex flex-wrap gap-2">
           <label
             v-for="(option, optIndex) in question.options"
             :key="optIndex"
-            :class="{
-              selected: question.selected === option,
-              disabled: !nameEntered,
-            }"
+            :class="[
+              'flex items-center px-4 py-2 border rounded-full cursor-pointer transition-colors',
+              question.selected === option ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-100',
+              !nameEntered ? 'opacity-60 cursor-not-allowed' : ''
+            ]"
           >
             <input
               type="radio"
@@ -47,30 +51,55 @@
               v-model="question.selected"
               @change="clearFeedback(index)"
               :disabled="!nameEntered"
-            />
+              class="mr-2 cursor-pointer disabled:cursor-not-allowed"
+            >
             {{ option }}
           </label>
         </div>
-        <div class="feedback" v-if="showFeedback && question.selected">
+        <div
+          v-if="showFeedback && question.selected"
+          class="mt-2 font-bold animate-fade-in"
+          :class="question.selected === question.correctAnswer ? 'text-green-600' : 'text-red-600'"
+        >
           {{ question.selected === question.correctAnswer ? '✓ Correct!' : '✗ Incorrect' }}
-        </div>
-      </div>
+        </div>      </div>
     </div>
 
-    <div class="actions">
-      <button @click="resetAnswers" class="reset-btn" :disabled="!nameEntered">
+    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+      <button
+        @click="resetAnswers"
+        :disabled="!nameEntered"
+        class="px-6 py-2 bg-gray-500 text-white rounded-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed hover:bg-gray-600 disabled:hover:bg-gray-500"
+      >
         Reset Answers
       </button>
-      <button @click="submitAnswers" class="submit-btn" :disabled="!nameEntered">Submit</button>
+      <button
+        @click="submitAnswers"
+        :disabled="!nameEntered"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed hover:bg-blue-700 disabled:hover:bg-blue-600"
+      >
+        Submit
+      </button>
     </div>
 
-    <div class="results" v-if="showResults">
-      <div class="result-message" :class="scoreClass">
+    <div
+      v-if="showResults"
+      class="text-center p-5 mb-6 rounded-lg animate-slide-up"
+      :class="{
+        'bg-green-100 text-green-800': scoreClass === 'excellent',
+        'bg-blue-100 text-blue-800': scoreClass === 'good',
+        'bg-yellow-100 text-yellow-800': scoreClass === 'average',
+        'bg-red-100 text-red-800': scoreClass === 'poor'
+      }"
+    >
+      <div class="font-bold text-lg">
         {{ resultMessage }}
       </div>
     </div>
 
-    <div class="copyright">copyright: www.mathinenglish.com</div>
+    <div class="text-center text-gray-500 text-sm mt-6">
+      copyright: www.mathinenglish.com
+    </div>
   </div>
 </template>
 
@@ -182,6 +211,13 @@ export default {
       return 'poor'
     },
   },
+  watch: {
+    nameEntered(newVal) {
+      if (!newVal) {
+        this.resetAnswers();
+      }
+    }
+  },
   methods: {
     handleNameInput() {
       this.nameEntered = this.studentName.trim().length > 0
@@ -222,90 +258,38 @@ export default {
 </script>
 
 <style scoped>
-.worksheet-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
 }
 
-h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 20px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #e8f4fc;
-  border-radius: 8px;
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.name-input input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 200px;
-}
-
-.input-error {
-  border-color: #e74c3c !important;
+.animate-shake {
   animation: shake 0.5s;
 }
 
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20%,
-  60% {
-    transform: translateX(-5px);
-  }
-  40%,
-  80% {
-    transform: translateX(5px);
-  }
+.animate-fade-in {
+  animation: fadeIn 0.5s;
 }
 
-.score-display {
-  font-weight: bold;
-  font-size: 18px;
-  color: #2c3e50;
-}
-
-.instructions {
-  font-style: italic;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #7f8c8d;
-}
-
-.questions-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.question-item {
-  padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.question-item:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.animate-slide-up {
+  animation: slideUp 0.5s;
 }
 
 .question-item.correct {
@@ -318,163 +302,5 @@ h1 {
   border-left: 4px solid #e74c3c;
 }
 
-.question-text {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
 
-.options-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.options-container label {
-  display: flex;
-  align-items: center;
-  padding: 8px 15px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.options-container label:hover {
-  background-color: #f0f0f0;
-}
-
-.options-container label.selected {
-  background-color: #3498db;
-  color: white;
-  border-color: #3498db;
-}
-
-.options-container input[type='radio'] {
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-.feedback {
-  margin-top: 10px;
-  font-weight: bold;
-  animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.actions {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-button {
-  padding: 10px 25px;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.reset-btn {
-  background-color: #95a5a6;
-  color: white;
-}
-
-.reset-btn:hover {
-  background-color: #7f8c8d;
-}
-
-.submit-btn {
-  background-color: #3498db;
-  color: white;
-}
-
-.submit-btn:hover {
-  background-color: #2980b9;
-}
-
-.results {
-  text-align: center;
-  margin-bottom: 30px;
-  padding: 20px;
-  border-radius: 8px;
-  animation: slideUp 0.5s;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.result-message {
-  font-size: 18px;
-  font-weight: bold;
-  padding: 15px;
-  border-radius: 5px;
-}
-
-.excellent {
-  background-color: rgba(46, 204, 113, 0.2);
-  color: #27ae60;
-}
-
-.good {
-  background-color: rgba(52, 152, 219, 0.2);
-  color: #2980b9;
-}
-
-.average {
-  background-color: rgba(241, 196, 15, 0.2);
-  color: #f39c12;
-}
-
-.poor {
-  background-color: rgba(231, 76, 60, 0.2);
-  color: #c0392b;
-}
-
-.copyright {
-  text-align: center;
-  color: #95a5a6;
-  font-size: 14px;
-  margin-top: 20px;
-}
-
-@media (max-width: 600px) {
-  .header-section {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .options-container {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  button {
-    width: 100%;
-    max-width: 200px;
-  }
-}
 </style>
