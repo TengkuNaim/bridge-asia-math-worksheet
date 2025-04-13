@@ -1,8 +1,10 @@
 <template>
   <div class="max-w-4xl mx-auto p-5 bg-gray-50 rounded-xl shadow-lg">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-5">Rounding Off to Nearest 10</h1>
-    
-    <div class="flex flex-col sm:flex-row justify-between items-center bg-blue-50 p-4 rounded-lg mb-5">
+
+    <div
+      class="flex flex-col sm:flex-row justify-between items-center bg-blue-50 p-4 rounded-lg mb-5"
+    >
       <div class="w-full sm:w-auto mb-3 sm:mb-0">
         <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">Name:</label>
         <input
@@ -11,37 +13,41 @@
           v-model="studentName"
           placeholder="Enter your name"
           @input="handleNameInput"
-          :class="['w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 
-                  showNameError ? 'border-red-500 animate-shake' : 'border-gray-300']"
-        >
+          :class="[
+            'w-full p-2 border rounded-md focus:outline-none',
+            showNameError ? 'border-red-500 animate-shake' : 'border-blue-500',
+          ]"
+        />
       </div>
-      <div v-if="showResults" class="text-lg font-bold text-gray-800">
-        Score: {{ score }}/12
-      </div>
+      <div v-if="showResults" class="text-lg font-bold text-gray-800">Score: {{ score }}/12</div>
     </div>
 
     <p class="text-center italic text-gray-600 mb-6">Circle the correct answers.</p>
-
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
       <div
         v-for="(question, index) in questions"
         :key="index"
-        class="question-item p-4 bg-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md"
+        class="question-item p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md"
         :class="{
-          'border-l-4 border-green-500 bg-green-50': showFeedback && question.selected === question.correctAnswer,
-          'border-l-4 border-red-500 bg-red-50': showFeedback && question.selected && question.selected !== question.correctAnswer
+          'border-l-4 border-green-500 bg-green-50':
+            showFeedback && question.selected == question.correctAnswer,
+          'border-l-4 border-red-500 bg-red-50':
+            showFeedback && question.selected && question.selected != question.correctAnswer,
+          'border-l-4 border-orange-500 bg-orange-50': showFeedback && !question.selected,
         }"
       >
-      <div class="font-bold text-gray-800 mb-3">{{ question.text }}</div>
+        <div class="font-bold text-gray-800 mb-3">{{ question.text }}</div>
         <div class="flex flex-wrap gap-2">
           <label
             v-for="(option, optIndex) in question.options"
             :key="optIndex"
             :class="[
               'flex items-center px-4 py-2 border rounded-full cursor-pointer transition-colors',
-              question.selected === option ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-100',
-              !nameEntered ? 'opacity-60 cursor-not-allowed' : ''
+              question.selected === option
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'border-gray-300 hover:bg-gray-100',
+              !nameEntered ? 'opacity-60 cursor-not-allowed' : '',
             ]"
           >
             <input
@@ -52,17 +58,24 @@
               @change="clearFeedback(index)"
               :disabled="!nameEntered"
               class="mr-2 cursor-pointer disabled:cursor-not-allowed"
-            >
+            />
             {{ option }}
           </label>
         </div>
         <div
-          v-if="showFeedback && question.selected"
+          v-if="showFeedback"
           class="mt-2 font-bold animate-fade-in"
           :class="question.selected === question.correctAnswer ? 'text-green-600' : 'text-red-600'"
         >
-          {{ question.selected === question.correctAnswer ? '✓ Correct!' : '✗ Incorrect' }}
-        </div>      </div>
+          {{
+            question.selected === question.correctAnswer
+              ? '✓ Correct!'
+              : !question.selected
+                ? '⚠️ Please answer this question'
+                : '✗ Incorrect'
+          }}
+        </div>
+      </div>
     </div>
 
     <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -89,7 +102,7 @@
         'bg-green-100 text-green-800': scoreClass === 'excellent',
         'bg-blue-100 text-blue-800': scoreClass === 'good',
         'bg-yellow-100 text-yellow-800': scoreClass === 'average',
-        'bg-red-100 text-red-800': scoreClass === 'poor'
+        'bg-red-100 text-red-800': scoreClass === 'poor',
       }"
     >
       <div class="font-bold text-lg">
@@ -97,9 +110,7 @@
       </div>
     </div>
 
-    <div class="text-center text-gray-500 text-sm mt-6">
-      copyright: www.mathinenglish.com
-    </div>
+    <div class="text-center text-gray-500 text-sm mt-6">copyright: www.mathinenglish.com</div>
   </div>
 </template>
 
@@ -214,9 +225,10 @@ export default {
   watch: {
     nameEntered(newVal) {
       if (!newVal) {
-        this.resetAnswers();
+        this.showNameError = true
+        this.resetAnswers()
       }
-    }
+    },
   },
   methods: {
     handleNameInput() {
@@ -259,22 +271,35 @@ export default {
 
 <style scoped>
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(20px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -301,6 +326,4 @@ export default {
   background-color: rgba(231, 76, 60, 0.1);
   border-left: 4px solid #e74c3c;
 }
-
-
 </style>
